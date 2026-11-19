@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BCC Аман — прототип семейной защиты переводов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#17191b; --panel:#222527; --panel2:#2b2e31; --line:#43474b; --phone:#3a3d40; --field:#2f3235;
+  --text:#f2f3f4; --mute:#a3a8ad; --green:#1fc46f; --green2:#17a45b; --gold1:#f3d27a; --gold2:#b8892f;
+  --red:#ef5a5f; --amber:#f2b441;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.45;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+header{display:flex;align-items:center;gap:14px;padding:16px 24px;border-bottom:1px solid #2a2d30;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:.2px}
+.brand b{color:var(--green)}
+.tag{margin-left:auto;font-size:12px;color:var(--mute);border:1px solid var(--line);padding:5px 10px;border-radius:99px}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 24px;background:#1c1e20;border-bottom:1px solid #2a2d30}
+.bar .lbl{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.8px;margin-right:4px}
+.chip{padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:13px}
+.chip:hover{border-color:var(--green)}
+.chip.on{background:rgba(31,196,111,.16);border-color:var(--green);color:var(--green)}
+.sep{width:1px;height:22px;background:var(--line);margin:0 6px}
+.stage{display:grid;grid-template-columns:360px 360px minmax(420px,1fr);gap:22px;padding:24px;align-items:start}
+@media(max-width:1250px){.stage{grid-template-columns:360px 360px}.bank{grid-column:1/-1}}
+@media(max-width:800px){.stage{grid-template-columns:1fr;justify-items:center;padding:14px}.bank{width:100%}}
+.col h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--mute);margin:0 0 10px 6px;font-weight:600}
+.phone{width:340px;height:700px;border-radius:46px;background:#0b0c0d;padding:10px;box-shadow:0 0 0 2px #2b2e31,0 30px 60px rgba(0,0,0,.5)}
+.screen{background:var(--phone);border-radius:36px;height:100%;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.sb{display:flex;justify-content:space-between;padding:14px 22px 6px;font-size:12px;font-weight:600;color:#d5d8da}
+.body{flex:1;overflow-y:auto;padding:8px 18px 18px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.top .ttl{font-weight:700;font-size:17px}
+.ico{width:34px;height:34px;border-radius:50%;background:var(--field);display:grid;place-items:center;font-size:16px}
+.card{background:var(--field);border:1px solid #4a4e52;border-radius:14px;padding:14px}
+.bal small{color:var(--mute);font-size:12px}
+.bal .v{font-size:30px;font-weight:800;margin-top:2px}
+.btn{height:52px;border-radius:12px;background:var(--green);font-weight:700;font-size:16px;color:#fff;width:100%}
+.btn:hover{background:var(--green2)}
+.btn.ghost{background:var(--field);border:1px solid #5a5f63}
+.btn.ghost:hover{border-color:var(--green)}
+.btn.red{background:var(--red)}
+.btn.sm{height:42px;font-size:14px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:10px}
+.lab{font-size:12px;color:var(--mute);margin:2px 0 6px}
+input.f{width:100%;height:52px;border-radius:12px;border:1px solid #5a5f63;background:var(--field);color:var(--text);padding:0 14px;font:inherit;font-size:17px;outline:0}
+input.f:focus{border-color:var(--green)}
+.rc{display:flex;flex-direction:column;gap:8px}
+.rc button{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid #55595d;background:var(--field)}
+.rc button.on{border-color:var(--green);background:rgba(31,196,111,.1)}
+.av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold1),var(--gold2));color:#2a2108;font-weight:800;display:grid;place-items:center;font-size:14px;flex:none}
+.big{font-size:19px;font-weight:700;line-height:1.3}
+.calm{font-size:17px;line-height:1.5}
+.note{font-size:12.5px;color:var(--mute)}
+.state{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0}
+.badge{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;font-size:36px}
+.badge.ok{background:rgba(31,196,111,.18)} .badge.warn{background:rgba(242,180,65,.2)} .badge.stop{background:rgba(239,90,95,.18)}
+.timer{font-size:34px;font-weight:800;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.sig{display:flex;gap:8px;padding:7px 0;border-bottom:1px dashed #50555a;font-size:13.5px}
+.sig:last-child{border:0}
+.sig .p{margin-left:auto;color:var(--amber);font-weight:700;white-space:nowrap}
+.cnt{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cnt .c{background:#2a2d30;border-radius:12px;padding:10px}
+.cnt .c b{display:block;font-size:20px}
+.cnt .c.hot{background:rgba(239,90,95,.16);outline:1px solid var(--red)}
+.cnt .c.hot b{color:var(--red)}
+.cnt small{color:var(--mute);font-size:11.5px}
+.modal{position:absolute;inset:0;background:rgba(0,0,0,.72);display:grid;place-items:center;padding:24px;z-index:5}
+.modal .card{text-align:center;width:100%}
+.scan{width:90px;height:90px;border-radius:24px;border:3px solid var(--green);margin:10px auto;display:grid;place-items:center;font-size:42px;animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 12px rgba(31,196,111,.15)}}
+.toast{position:absolute;left:14px;right:14px;bottom:14px;background:#111;border:1px solid var(--green);border-radius:12px;padding:10px 12px;font-size:13px;z-index:6}
+.bank{display:flex;flex-direction:column;gap:16px}
+.pn{background:var(--panel);border:1px solid #303338;border-radius:16px;padding:16px}
+.pn h4{font-size:13px;text-transform:uppercase;letter-spacing:.9px;color:var(--mute);font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{background:var(--panel2);border-radius:12px;padding:12px}
+.kpi b{font-size:22px;display:block;font-weight:800}
+.kpi small{color:var(--mute);font-size:11.5px}
+.kpi.g b{color:var(--green)}
+.meter{margin:10px 0}
+.meter .t{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.meter .t span:last-child{color:var(--mute)}
+.track{height:8px;border-radius:99px;background:#34383c;overflow:hidden}
+.fill{height:100%;border-radius:99px;background:var(--green);transition:width .4s}
+.fill.hot{background:var(--red)} .fill.mid{background:var(--amber)}
+.score{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.score .n{font-size:40px;font-weight:800;width:84px}
+.feed{display:flex;flex-direction:column;gap:8px;max-height:210px;overflow:auto}
+.ev{display:flex;gap:10px;font-size:13px;padding:8px 10px;border-radius:10px;background:var(--panel2);border-left:3px solid var(--green)}
+.ev.w{border-color:var(--amber)} .ev.r{border-color:var(--red)}
+.ev time{color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+svg text{font-family:Inter,sans-serif}
+.doss{white-space:pre-wrap;background:#1a1c1e;border:1px solid #35393d;border-radius:12px;padding:14px;font-size:13px;line-height:1.55;margin-top:10px}
+.empty{color:var(--mute);font-size:13px;padding:6px 0}
+.mini{display:flex;gap:8px;flex-wrap:wrap}
+.flow{stroke-dasharray:5 5;animation:dash 1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-20}}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}}
+.body{animation:fade .25s ease}
+.push{position:absolute;top:34px;left:10px;right:10px;background:rgba(18,20,22,.97);border:1px solid #4a4e52;border-radius:16px;padding:10px 12px;z-index:7;display:flex;gap:10px;align-items:center;animation:drop .35s ease;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.push b{font-size:13px}.push .note{font-size:12px}
+@keyframes drop{from{transform:translateY(-130%);opacity:0}}
+.phone.shake{animation:shake .5s}
+@keyframes shake{20%,60%{transform:translateX(-6px) rotate(-1deg)}40%,80%{transform:translateX(6px) rotate(1deg)}}
+.cap{display:none;margin:14px 24px 0;padding:14px 18px;border-radius:14px;background:linear-gradient(90deg,rgba(31,196,111,.16),rgba(243,210,122,.08));border:1px solid var(--green);font-size:17px;font-weight:600}
+.cap.on{display:flex;align-items:center;gap:16px;animation:fade .3s ease}
+.cap span{flex:1}
+.nextb{flex:none;padding:10px 18px;border-radius:12px;background:var(--green);color:#fff;font-weight:700;font-size:15px}
+.chip.play{background:var(--green);border-color:var(--green);color:#fff}
+footer{padding:6px 24px 28px;color:var(--mute);font-size:12.5px;max-width:1100px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3d27a"/><stop offset="1" stop-color="#b8892f"/></linearGradient></defs><path d="M17 2.5 29 7v9.5c0 7.2-4.8 12.7-12 15-7.2-2.3-12-7.8-12-15V7z" fill="none" stroke="url(#g)" stroke-width="2.4" stroke-linejoin="round"/><path d="M11 17.5 15.5 22 23.5 12" fill="none" stroke="#1fc46f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>BCC <b>Аман</b></span>
+  </div>
+  <span class="tag" data-ru="Прототип ITU Hackathon-2026 · не настоящее приложение банка" data-kz="ITU Hackathon-2026 прототипі · банктің нақты қосымшасы емес"></span>
+</header>
+
+<div class="bar">
+  <button class="chip play" data-act="auto" data-ru="▶ Демо по шагам (Enter)" data-kz="▶ Қадамдық демо (Enter)"></button>
+  <span class="sep"></span>
+  <span class="lbl" data-ru="Сценарий демо" data-kz="Демо сценарийі"></span>
+  <button class="chip" data-act="scn1" data-ru="1 · Обычная жизнь" data-kz="1 · Қарапайым өмір"></button>
+  <button class="chip" data-act="scn2" data-ru="2 · Дробление частями" data-kz="2 · Бөлшектеп аудару"></button>
+  <button class="chip" data-act="scn3" data-ru="3 · Дроп-получатель" data-kz="3 · Дроп-алушы"></button>
+  <span class="sep"></span>
+  <span class="lbl" data-ru="Симуляция" data-kz="Симуляция"></span>
+  <button class="chip" id="tCall" data-act="tcall" data-ru="📞 Идёт звонок" data-kz="📞 Қоңырау болып жатыр"></button>
+  <button class="chip" id="tHes" data-act="thes" data-ru="😟 Бабушка путается" data-kz="😟 Әже абыржып тұр"></button>
+  <span class="sep"></span>
+  <button class="chip on" id="tLang" data-act="lang">Тіл: ҚАЗ</button>
+  <button class="chip" data-act="reset" data-ru="↺ Сбросить" data-kz="↺ Қайта бастау"></button>
+</div>
+
+<div class="cap" id="cap"></div>
+<div class="stage">
+  <div class="col"><h3 data-ru="Бабушка · Сауле" data-kz="Әже · Сәуле"></h3><div class="phone"><div class="screen" id="gm"></div></div></div>
+  <div class="col"><h3 data-ru="Внучка · Айгерим (доверенная)" data-kz="Немере · Айгерім (сенімді адам)"></h3><div class="phone"><div class="screen" id="gd"></div></div></div>
+  <div class="col bank" id="bank"></div>
+</div>
+
+<footer data-ru="В прототипе телефонный звонок и поведение симулируются переключателями выше; в настоящем приложении BCC эти сигналы даёт нативный API Android/iOS. Пороги Счётчика 24 часа стартовые и настраиваются в конфиге. Решения принимают правила и модели, текст объясняет шаблон из реальных фактов." data-kz="Прототипте телефон қоңырауы мен мінез-құлық жоғарыдағы ауыстырғыштармен симуляцияланады; BCC-дің нақты қосымшасында бұл сигналдарды Android/iOS нативті API береді. 24 сағаттық есептегіштің шектері бастапқы және конфигте бапталады. Шешімді ережелер мен модельдер қабылдайды, мәтінді нақты фактілерден жасалған үлгі түсіндіреді."></footer>
+
+<script>
+
+const USUAL = 15000, SUM_LIMIT = 135000, CNT_LIMIT = 3, FAN_LIMIT = 5, OUT_LIMIT = 80;
+const DIR = {
+  '7011111111': {ru:'Данияр К. (внук)', kz:'Данияр К. (немере)', short:'Д', known:true,  senders:1,  inflow:20000,   out:0,  age:900},
+  '7772222222': {ru:'Асхат Н.',         kz:'Асхат Н.',           short:'А', known:false, senders:2,  inflow:110000,  out:20, age:40},
+  '7055550142': {ru:'Ерболат С.',       kz:'Ерболат С.',         short:'Е', known:false, senders:15, inflow:4800000, out:92, age:2}
+};
+const SVC = [
+  {ru:'Коммунальные услуги', kz:'Коммуналдық қызметтер', short:'🏠', amount:18500},
+  {ru:'Мобильная связь',     kz:'Ұялы байланыс',         short:'📱', amount:3000},
+  {ru:'Интернет и ТВ',       kz:'Интернет және ТД',      short:'📺', amount:6500}
+];
+const kzOn = () => S.lang==='kz';
+const T = (ru,kz) => kzOn() ? kz : ru;
+const P = p => kzOn() ? p[1] : p[0];
+const nm = r => kzOn() ? r.kz : r.ru;
+const fmt = n => Math.round(n).toLocaleString('ru-RU').replace(/ /g,' ') + ' ₸';
+const now = () => new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const key = p => (p||'').replace(/\D/g,'').slice(-10);
+const lookup = p => DIR[key(p)] || {ru:'Новый получатель', kz:'Жаңа алушы', short:'?', known:false, senders:0, inflow:0, out:0, age:0};
+const plural = n => n%10===1&&n%100!==11 ? 'перевод' : (n%10>=2&&n%10<=4&&(n%100<10||n%100>=20) ? 'перевода' : 'переводов');
+
+const fresh = () => ({
+  screen:'home', phone:'', amount:'', call:false, hes:false, lang:'kz',
+  balance:1250000, ledger:[], pending:null, result:null, gscreen:'idle', face:false, toast:null,
+  countdown:600, esc:false, stats:{paused:0,saved:0,nets:0,soft:0}, alerts:[], cases:[], dossier:false, notes:[]
+});
+let S = fresh(), tick = null;
+
+function assess(r, amount){
+  const sent = S.ledger.filter(x=>x.status==='sent');
+  const count = sent.length+1, sum = sent.reduce((a,x)=>a+x.amount,0)+amount;
+  const sig = [], add = (id,pts,ru,kz)=>sig.push({id,pts,txt:[ru,kz]});
+  const k = Math.round(amount/USUAL);
+  if(amount>3*USUAL) add('amt',20,`Сумма в ${k} раз больше обычного перевода`,`Сома әдеттегі аударымнан ${k} есе көп`);
+  if(!r.known) add('new',15,'Бабушка раньше не переводила этому человеку','Әже бұл адамға бұрын аударым жасаған емес');
+  if(S.call) add('call',15,'Во время перевода идёт телефонный звонок','Аударым кезінде телефон қоңырауы жүріп жатыр');
+  if(S.hes) add('hes',5,'Бабушка долго думает и сворачивает приложение','Әже ұзақ ойланып, қосымшаны жасырады');
+  if(sum>SUM_LIMIT) add('sum',30,`За 24 часа ${count} ${plural(count)} на ${fmt(sum)} (обычно ${fmt(USUAL)} в неделю)`,`24 сағатта ${count} аударым, барлығы ${fmt(sum)} (әдетте аптасына ${fmt(USUAL)})`);
+  if(count>CNT_LIMIT) add('cnt',20,`Больше ${CNT_LIMIT} переводов за 24 часа`,`24 сағатта ${CNT_LIMIT}-тен көп аударым`);
+  if(r.senders>=FAN_LIMIT) add('fan',40,`Получателю за сутки перевели ${r.senders} разных людей`,`Алушыға тәулік ішінде ${r.senders} түрлі адам аударған`);
+  if(r.out>=OUT_LIMIT) add('out',15,`${r.out}% полученных денег уходит дальше за 1 час`,`Алынған ақшаның ${r.out}% бір сағатта әрі кетеді`);
+  const score = Math.min(100, sig.reduce((a,s)=>a+s.pts,0));
+  const hard = r.senders>=FAN_LIMIT;
+  const level = (hard||score>=60) ? 'pause' : score>=30 ? 'soft' : 'pass';
+  return {r, amount, sig, score, level, count, sum, time:now()};
+}
+function log(ru, kz, cls=''){ S.alerts.unshift({t:now(), txt:[ru,kz], cls}); }
+
+function send(a){
+  S.ledger.push({to:a.r.ru, amount:a.amount, status:'sent'});
+  S.balance -= a.amount;
+  S.result = {type:'sent', a}; S.screen='result';
+  log(`Перевод ${fmt(a.amount)} → ${a.r.ru} прошёл`,`${fmt(a.amount)} аударымы → ${a.r.kz} өтті`);
+}
+function submit(){
+  const amount = parseInt(String(S.amount).replace(/\D/g,''),10)||0;
+  if(!S.phone || !amount) return;
+  const a = assess(lookup(S.phone), amount);
+  if(a.level==='pass'){ send(a); log(`Обычный перевод: риск ${a.score}, трения нет`,`Қарапайым аударым: тәуекел ${a.score}, кедергі жоқ`); }
+  else if(a.level==='soft'){ S.result={type:'soft',a}; S.screen='result'; S.stats.soft++; log(`Мягкое предупреждение бабушке: риск ${a.score}`,`Әжеге жұмсақ ескерту: тәуекел ${a.score}`,'w'); }
+  else{
+    S.pending=a; S.result={type:'paused',a}; S.screen='result'; S.gscreen='request'; S.countdown=600; S.esc=false;
+    S.stats.paused++; S.cases.push(a); pushNotify();
+    log(`ПАУЗА ${fmt(a.amount)} → ${a.r.ru}: риск ${a.score}, запрос Айгерим`,`ҮЗІЛІС ${fmt(a.amount)} → ${a.r.kz}: тәуекел ${a.score}, Айгерімге сұрау жіберілді`,'r');
+    clearInterval(tick); tick=setInterval(()=>{ S.countdown--; document.querySelectorAll('[data-timer]').forEach(e=>e.textContent=mmss()); if(S.countdown<=0){clearInterval(tick); S.esc=true; log('Айгерим не ответила 10 минут: запрос передан Ерлану (сын)','Айгерім 10 минут жауап бермеді: сұрау Ерланға (ұлы) жіберілді','w'); renderPhones();} },1000);
+  }
+  renderAll();
+}
+const mmss = () => { const m=Math.max(0,S.countdown); return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); };
+function toast(ru,kz,w){ S.toast={ru,kz,w}; renderPhones(); setTimeout(()=>{S.toast=null;renderPhones();},3500); }
+
+function decide(act){
+  const a = S.pending; if(!a) return;
+  if(act==='call'){ toast('Звонок бабушке… «Әже, положи трубку, это мошенники!»','Әжеге қоңырау… «Әже, тұтқаны қойыңыз, бұл алаяқтар!»','d'); return; }
+  if(act==='allow'){
+    if(a.amount>100000 && !S.face){ S.face=true; renderPhones(); setTimeout(()=>{S.face=false; finishAllow();},1300); return; }
+    finishAllow(); return;
+  }
+  if(act==='stop'){
+    clearInterval(tick); S.pending=null; S.stats.saved+=a.amount; if(a.r.senders>=FAN_LIMIT) S.stats.nets++;
+    S.result={type:'stopped',a}; S.gscreen='done'; S.dossier=false;
+    log(`Айгерим ОСТАНОВИЛА перевод ${fmt(a.amount)}. Получатель ${a.r.ru} помечен, раскрываем связи`,`Айгерім ${fmt(a.amount)} аударымын ТОҚТАТТЫ. Алушы ${a.r.kz} белгіленді, байланыстар ашылуда`,'r');
+    renderAll();
+  }
+}
+function finishAllow(){
+  const a=S.pending; clearInterval(tick); S.pending=null;
+  S.ledger.push({to:a.r.ru,amount:a.amount,status:'sent'}); S.balance-=a.amount;
+  S.result={type:'approved',a}; S.gscreen='done';
+  log(`Айгерим РАЗРЕШИЛА перевод ${fmt(a.amount)} → ${a.r.ru}`,`Айгерім ${fmt(a.amount)} аударымына → ${a.r.kz} РҰҚСАТ БЕРДІ`,'w'); renderAll();
+}
+
+/* ---------- Бабушка / Әже ---------- */
+function sb(){ return `<div class="sb"><span>${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</span><span>●●● 5G ▮</span></div>`; }
+function renderG(){
+  let h='';
+  if(S.screen==='home'){
+    h = `<div class="top"><div class="ttl">${T('Здравствуйте, Сауле','Сәлеметсіз бе, Сәуле')}</div><button class="ico" data-act="settings">⚙</button></div>
+    <div class="card bal"><small>${T('Основной счёт','Негізгі шот')}</small><div class="v">${fmt(S.balance)}</div></div>
+    <div class="card" style="display:flex;gap:10px;align-items:center"><span style="font-size:22px">🛡</span><div><b>${T('Режим «Аман» включён','«Аман» режимі қосулы')}</b><div class="note">${T('Доверенные: Айгерим, Ерлан','Сенімді адамдар: Айгерім, Ерлан')}</div></div></div>
+    <button class="btn" data-act="goform">${T('Перевести','Аудару')}</button>
+    <button class="btn ghost" data-act="services">${T('Оплатить услуги','Қызметтерге төлеу')}</button>`;
+  } else if(S.screen==='form'){
+    const keys = Object.keys(DIR);
+    h = `<div class="top"><button class="ico" data-act="home">←</button><div class="ttl">${T('Перевод','Аударым')}</div><span style="width:34px"></span></div>
+    <div><div class="lab">${T('Кому','Кімге')}</div><div class="rc">${keys.map(p=>{const d=DIR[p];const on=key(S.phone)===p;return `<button class="${on?'on':''}" data-act="pick" data-p="${p}"><span class="av">${d.short}</span><span><b>${nm(d)}</b><div class="note">+7 ${p.slice(0,3)} ${p.slice(3,6)} ${p.slice(6,8)} ${p.slice(8)}</div></span></button>`}).join('')}</div></div>
+    <div><div class="lab">${T('или номер телефона','немесе телефон нөмірі')}</div><input class="f" id="inPhone" inputmode="tel" placeholder="+7" value="${S.phone}"></div>
+    <div><div class="lab">${T('Сумма, ₸','Сома, ₸')}</div><input class="f" id="inAmt" inputmode="numeric" placeholder="0" value="${S.amount}"></div>
+    <button class="btn" data-act="submit">${T('Перевести','Аудару')}</button>`;
+  } else if(S.screen==='services'){
+    h = `<div class="top"><button class="ico" data-act="home">←</button><div class="ttl">${T('Оплата услуг','Қызметтерге төлеу')}</div><span style="width:34px"></span></div>
+    <div class="rc">${SVC.map((v,i)=>`<button data-act="paysvc" data-i="${i}"><span class="av">${v.short}</span><span><b>${nm(v)}</b><div class="note">${fmt(v.amount)}</div></span></button>`).join('')}</div>
+    <div class="note">${T('Регулярные платежи проходят без проверок.','Тұрақты төлемдер тексерусіз өтеді.')}</div>`;
+  } else if(S.screen==='settings'){
+    h = `<div class="top"><button class="ico" data-act="home">←</button><div class="ttl">${T('Режим «Аман»','«Аман» режимі')}</div><span style="width:34px"></span></div>
+    <div class="card"><b>${T('Доверенные люди','Сенімді адамдар')}</b><div class="note" style="margin-top:4px">${T('Айгерим (внучка) · Ерлан (сын)','Айгерім (немере) · Ерлан (ұлы)')}</div></div>
+    <button class="btn ghost" data-act="chg">${T('Сменить доверенного','Сенімді адамды ауыстыру')}</button>
+    <button class="btn ghost" data-act="off">${T('Выключить режим','Режимді өшіру')}</button>
+    ${S.notes.length?`<div class="card" style="border-color:var(--amber)">${S.notes.map(n=>`<div class="calm">${noteG(n)}</div>`).join('')}</div>`:''}
+    <div class="note">${T('Любое изменение защиты вступает в силу через 24 часа, чтобы мошенник не мог отключить её по телефону.','Қорғаныс баптауларының кез келген өзгерісі 24 сағаттан кейін күшіне енеді, сондықтан алаяқ оны телефон арқылы өшіре алмайды.')}</div>`;
+  } else if(S.screen==='result'){
+    const r=S.result, a=r.a;
+    if(r.type==='sent'){
+      h = `<div class="state"><div class="badge ok">✓</div><div class="big">${T('Перевод отправлен','Аударым жіберілді')}</div><div class="calm">${fmt(a.amount)} → ${nm(a.r)}</div></div><button class="btn" data-act="home">${T('На главную','Басты бетке')}</button>`;
+    } else if(r.type==='approved'){
+      h = `<div class="state"><div class="badge ok">✓</div><div class="big">${T('Айгерим подтвердила перевод','Айгерім аударымды растады')}</div><div class="calm">${fmt(a.amount)} → ${nm(a.r)}</div></div><button class="btn" data-act="home">${T('На главную','Басты бетке')}</button>`;
+    } else if(r.type==='soft'){
+      h = `<div class="state"><div class="badge warn">!</div><div class="big">${T('Проверьте перевод','Аударымды тексеріңіз')}</div></div>
+      <div class="card calm">${T('Если кто-то по телефону торопит вас, положите трубку. Настоящий банк никогда не торопит.','Егер біреу телефон арқылы асықтырса, тұтқаны қойыңыз. Нағыз банк ешқашан асықтырмайды.')}</div>
+      <div class="note" style="text-align:center">${fmt(a.amount)} → ${nm(a.r)}</div>
+      <button class="btn ghost" data-act="home">${T('Отменить','Бас тарту')}</button><button class="btn" data-act="force">${T('Всё равно отправить','Бәрібір жіберу')}</button>`;
+    } else if(r.type==='paused'){
+      h = `<div class="state"><div class="badge warn">⏸</div><div class="big">${T('Перевод ожидает подтверждения','Аударым растауды күтуде')}</div></div>
+      <div class="card calm">${T('Мы попросили Айгерим проверить его. Это займёт пару минут. Если кто-то по телефону торопит вас, положите трубку. Настоящий банк никогда не торопит.','Біз Айгерімнен оны тексеруді сұрадық. Бұл бірнеше минут алады. Егер біреу телефон арқылы асықтырса, тұтқаны қойыңыз. Нағыз банк ешқашан асықтырмайды.')}</div>
+      <div style="text-align:center"><div class="note">${S.esc?T('Запрос передан Ерлану (сын)','Сұрау Ерланға (ұлы) жіберілді'):T('Ответ ожидается в течение','Жауап күтілуде')}</div><div class="timer" data-timer>${mmss()}</div></div>
+      <button class="btn ghost" data-act="speak">🔊 ${T('Прослушать','Тыңдау')}</button>
+      <button class="btn ghost" data-act="urgent">${T('Срочно: позвонить в BCC','Шұғыл: BCC-ге қоңырау шалу')}</button>`;
+    } else if(r.type==='stopped'){
+      h = `<div class="state"><div class="badge stop">✋</div><div class="big">${T('Перевод остановлен','Аударым тоқтатылды')}</div></div>
+      <div class="card calm">${T('Ваши деньги на месте. Айгерим позвонит вам. Вы всё сделали правильно: обмануть могут любого.','Ақшаңыз орнында. Айгерім сізге қоңырау шалады. Сіз бәрін дұрыс істедіңіз: алдап кетуі кез келген адамды мүмкін.')}</div>
+      <button class="btn" data-act="home">${T('На главную','Басты бетке')}</button>`;
+    }
+  }
+  if(S.toast && S.toast.w==='g') h += `<div class="toast">${T(S.toast.ru,S.toast.kz)}</div>`;
+  document.getElementById('gm').innerHTML = sb()+`<div class="body">${h}</div>`;
+  const ip=document.getElementById('inPhone'), ia=document.getElementById('inAmt');
+  if(ip) ip.oninput=e=>{S.phone=e.target.value;renderBank();};
+  if(ia) ia.oninput=e=>{S.amount=e.target.value;renderBank();};
+}
+function noteG(n){
+  const t = n==='off' ? T('Выключение режима','Режимді өшіру') : T('Смена доверенного','Сенімді адамды ауыстыру');
+  return t + T(': изменение вступит в силу через 24 часа. Айгерим получила уведомление.',': өзгеріс 24 сағаттан кейін күшіне енеді. Айгерім хабарландыру алды.');
+}
+
+/* ---------- Внучка / Немере ---------- */
+function expl(a){
+  const hf = a.r.senders>=FAN_LIMIT;
+  return `<div class="card" style="border-color:var(--red)"><div class="big">${T('Бабушка Сауле переводит','Сәуле әже аударып жатыр')} ${fmt(a.amount)}<br>${a.r.known?'':T('незнакомому человеку','бейтаныс адамға')}</div><div class="note" style="margin-top:4px">${nm(a.r)} · ${T('риск','тәуекел')} ${a.score} ${T('из','/')} 100</div></div>
+  <div><div class="lab">${T('Счётчик 24 часа','24 сағаттық есептегіш')}</div><div class="cnt">
+    <div class="c ${a.sum>SUM_LIMIT?'hot':''}"><b>${a.count} ${kzOn()?'аударым':plural(a.count)}</b><small>${T('бабушки за сутки','әженің тәулік ішінде')}</small></div>
+    <div class="c ${a.sum>SUM_LIMIT?'hot':''}"><b>${fmt(a.sum)}</b><small>${T('обычно','әдетте')} ${fmt(USUAL)}/${T('нед.','апта')}</small></div>
+    <div class="c ${hf?'hot':''}"><b>${a.r.senders} ${T('чел.','адам')}</b><small>${T('перевели получателю','алушыға аударған')}</small></div>
+    <div class="c ${a.r.out>=OUT_LIMIT?'hot':''}"><b>${a.r.out}%</b><small>${T('уходит дальше за час','бір сағатта әрі кетеді')}</small></div></div></div>
+  <div class="card"><div class="lab" style="margin:0 0 4px">${T('Почему мы насторожились','Неге біз сақтандық')}</div>${a.sig.map(s=>`<div class="sig"><span>⚠</span><span>${P(s.txt)}</span></div>`).join('')}</div>
+  <div class="note">${T('Банк никогда не попросит одобрить перевод по телефону. Позвоните бабушке сами.','Банк ешқашан аударымды телефон арқылы мақұлдауды сұрамайды. Әжеге өзіңіз қоңырау шалыңыз.')}</div>`;
+}
+function renderD(){
+  let h='';
+  if(S.gscreen==='request' && S.pending){
+    h = `<div class="top"><div class="ttl">${T('Нужна ваша проверка','Сіздің тексеруіңіз қажет')}</div><span class="ico">🔔</span></div>${expl(S.pending)}
+    <button class="btn sm" data-act="d-call">📞 ${T('Позвонить бабушке','Әжеге қоңырау шалу')}</button>
+    <div class="row"><button class="btn red sm" data-act="d-stop">${T('Остановить','Тоқтату')}</button><button class="btn ghost sm" data-act="d-allow">${T('Разрешить','Рұқсат ету')}</button></div>`;
+  } else if(S.gscreen==='done' && S.result){
+    const st=S.result.type==='stopped';
+    h = `<div class="state" style="margin-top:30px"><div class="badge ${st?'ok':'warn'}">${st?'✓':'!'}</div><div class="big">${st?T('Перевод остановлен','Аударым тоқтатылды'):T('Перевод разрешён','Аударымға рұқсат берілді')}</div><div class="calm">${st?T('Деньги бабушки в безопасности. Спасибо, что проверили. Получатель передан в банк на проверку.','Әженің ақшасы қауіпсіз. Тексергеніңізге рахмет. Алушы банкке тексеруге жіберілді.'):T('Вы подтвердили перевод '+fmt(S.result.a.amount)+'.','Сіз '+fmt(S.result.a.amount)+' аударымын растадыңыз.')}</div></div>
+    <button class="btn ghost" data-act="d-idle">${T('Закрыть','Жабу')}</button>`;
+  } else {
+    h = `<div class="top"><div class="ttl">${T('Семья','Отбасы')}</div><span class="ico">👵</span></div>
+    <div class="card" style="display:flex;gap:12px;align-items:center"><span class="av" style="width:44px;height:44px;font-size:18px">С</span><div><b>${T('Бабушка Сауле','Сәуле әже')}</b><div class="note" style="color:var(--green)">● ${T('Всё спокойно','Бәрі тыныш')}</div></div></div>
+    <div class="note">${T('Вы видите только тревожные случаи, а не все расходы бабушки. Данные доступны с её согласия.','Сіз тек алаңдатарлық жағдайларды көресіз, әженің барлық шығындарын емес. Деректер оның келісімімен қолжетімді.')}</div>
+    ${S.notes.length?`<div class="card" style="border-color:var(--amber)"><b>${T('Уведомление','Хабарландыру')}</b>${S.notes.map(n=>`<div class="note" style="color:var(--text);margin-top:6px">${T('Бабушка запросила изменение защиты ('+(n==='off'?'выключение режима':'смена доверенного')+'). Оно вступит в силу через 24 часа.','Әже қорғанысты өзгертуді сұрады ('+(n==='off'?'режимді өшіру':'сенімді адамды ауыстыру')+'). Ол 24 сағаттан кейін күшіне енеді.')}</div>`).join('')}</div>`:''}
+    <div class="card note">${T('Когда бабушка сделает необычный перевод, запрос появится здесь с объяснением от ИИ.','Әже әдеттен тыс аударым жасаса, сұрау осында жасанды интеллект түсіндірмесімен шығады.')}</div>`;
+  }
+  let extra='';
+  if(S.push && S.pending) extra += `<div class="push"><span class="av">🛡</span><div><b>BCC · ${T('Нужна ваша проверка','Сіздің тексеруіңіз қажет')}</b><div class="note">${T('Бабушка Сауле переводит','Сәуле әже аударып жатыр')} ${fmt(S.pending.amount)}</div></div></div>`;
+  if(S.face) extra += `<div class="modal"><div class="card"><div class="big">${T('Крупная сумма','Ірі сома')}</div><div class="note">${T('Подтвердите лицом: вы настоящая Айгерим','Бет арқылы растаңыз: сіз нағыз Айгерімсіз')}</div><div class="scan">🙂</div><div class="note">${T('Сканирование…','Сканерлеу…')}</div></div></div>`;
+  if(S.toast && S.toast.w==='d') extra += `<div class="toast">${T(S.toast.ru,S.toast.kz)}</div>`;
+  document.getElementById('gd').innerHTML = sb()+`<div class="body">${h}</div>`+extra;
+}
+
+/* ---------- Пульт банка ---------- */
+function meter(label,val,lim,txt){
+  const p=Math.min(100,val/lim*100), cls = val>lim?'hot':(p>66?'mid':'');
+  return `<div class="meter"><div class="t"><span>${label}</span><span>${txt}</span></div><div class="track"><div class="fill ${cls}" style="width:${p}%"></div></div></div>`;
+}
+function graph(a){
+  const r=a.r, n=Math.min(Math.max(r.senders,1),7), more=r.senders-n;
+  const H=250, cx=270, cy=125, outs=r.out>=50?4:(r.out>0?1:0);
+  let s='';
+  for(let i=0;i<n;i++){
+    const y=n>1 ? 22+i*(H-44)/(n-1) : H/2;
+    s+=`<line class="flow" x1="70" y1="${y}" x2="${cx-26}" y2="${cy}" stroke="#f2b441" stroke-width="1.4"/><circle cx="62" cy="${y}" r="9" fill="#2b2e31" stroke="#f2b441" stroke-width="1.6"/>`;
+  }
+  if(more>0) s+=`<text x="62" y="${H-2}" text-anchor="middle" fill="#a3a8ad" font-size="11">+${more} ${T('жертв','құрбан')}</text>`;
+  s+=`<text x="62" y="12" text-anchor="middle" fill="#a3a8ad" font-size="11">${T('отправители','жіберушілер')}</text>`;
+  for(let j=0;j<outs;j++){
+    const y=outs>1 ? 30+j*(H-60)/(outs-1) : H/2;
+    s+=`<line class="flow" x1="${cx+26}" y1="${cy}" x2="430" y2="${y}" stroke="#ef5a5f" stroke-width="1.6"/><circle cx="440" cy="${y}" r="11" fill="#3a1f21" stroke="#ef5a5f" stroke-width="1.8"/><text x="440" y="${y+4}" text-anchor="middle" fill="#ef5a5f" font-size="10" font-weight="700">${T('дроп','дроп')}</text>`;
+    if(j===outs-1 && outs>1) s+=`<line x1="451" y1="${y}" x2="498" y2="${y}" stroke="#ef5a5f" stroke-width="1.6" stroke-dasharray="3 3"/><text x="500" y="${y+4}" fill="#a3a8ad" font-size="11">${T('вывод','шығару')}</text>`;
+  }
+  if(outs>0) s+=`<text x="440" y="12" text-anchor="middle" fill="#a3a8ad" font-size="11">${T('куда уходят деньги','ақша қайда кетеді')}</text>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="26" fill="#3a1f21" stroke="#ef5a5f" stroke-width="2.4"/><text x="${cx}" y="${cy+4}" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">${r.senders>=FAN_LIMIT?'ДРОП':T('получатель','алушы')}</text>`;
+  return `<svg viewBox="0 0 560 ${H}" width="100%" role="img" aria-label="${T('Сеть переводов вокруг получателя','Алушының айналасындағы аударымдар желісі')}">${s}</svg>`;
+}
+function dossier(a){
+  const kz=kzOn(), L=a.sig.map(s=>'• '+P(s.txt)).join('\n');
+  const stopped = S.result && S.result.type==='stopped';
+  if(kz) return `КҮДІКТІ АУДАРЫМ БОЙЫНША АНЫҚТАМА\nУақыты: ${a.time}\nСома: ${fmt(a.amount)}\nАлушы: ${a.r.kz}\nТәуекел деңгейі: ${a.score} / 100\nАударым күйі: ${stopped?'отбасы тоқтатты':'үзілісте'}\n\nБелгілер:\n${L}\n\nБайланысты шоттар: 24 сағатта ${a.r.senders} жіберуші, алынған ақшаның ${a.r.out}% бір сағат ішінде әрі кетеді.\n\nҰсынылатын әрекеттер:\n1. Алушы шотын уақытша бұғаттау\n2. Байланысты шоттар мен құрылғыларды тексеру\n3. Құқық қорғау органдары мен қаржылық мониторинг агенттігіне хабарлау\n4. Клиентпен байланысу\n\nЕскерту: анықтама тіркелген фактілерден автоматты түрде құрастырылған, қорытындыны банк мамандары шығарады. Жүйенің сенімділігі: ${a.score>=80?'жоғары':'орташа'}.`;
+  return `СПРАВКА ПО ПОДОЗРИТЕЛЬНОМУ ПЕРЕВОДУ\nВремя: ${a.time}\nСумма: ${fmt(a.amount)}\nПолучатель: ${a.r.ru}\nУровень риска: ${a.score} из 100\nСтатус перевода: ${stopped?'остановлен семьёй':'на паузе'}\n\nПризнаки:\n${L}\n\nСвязанные счета: ${a.r.senders} отправителей за 24 часа, ${a.r.out}% полученных денег уходит дальше в течение часа.\n\nРекомендуемые действия:\n1. Временно заблокировать счёт получателя\n2. Проверить связанные счета и устройства\n3. Уведомить правоохранительные органы и АФМ\n4. Связаться с клиентом\n\nПримечание: справка собрана автоматически из зафиксированных фактов, выводы делают специалисты банка. Уверенность системы: ${a.score>=80?'высокая':'средняя'}.`;
+}
+function renderBank(){
+  const amt = parseInt(String(S.amount).replace(/\D/g,''),10)||0;
+  const preview = (S.screen==='form' && S.phone && amt>0) ? assess(lookup(S.phone), amt) : null;
+  const cur = S.pending || preview || (S.cases.length ? S.cases[S.cases.length-1] : null);
+  const label = S.pending ? T('Перевод на паузе','Аударым үзілісте') : preview ? T('Предпросмотр: если отправить сейчас','Алдын ала қарау: қазір жіберсе') : cur ? T('Последний случай','Соңғы жағдай') : '';
+  const stopped = S.result && S.result.type==='stopped';
+  const showG = cur && (stopped || S.pending);
+  let h = `<div class="kpis">
+    <div class="kpi"><b>${S.stats.paused}</b><small>${T('переводов на паузе','үзілістегі аударымдар')}</small></div>
+    <div class="kpi g"><b>${fmt(S.stats.saved)}</b><small>${T('сохранено клиентам','клиенттерге сақталды')}</small></div>
+    <div class="kpi"><b>${S.stats.nets}</b><small>${T('сетей дропов раскрыто','ашылған дроп желілері')}</small></div>
+    <div class="kpi"><b>${S.stats.soft}</b><small>${T('мягких предупреждений','жұмсақ ескертулер')}</small></div></div>`;
+  h += `<div class="pn"><h4>${T('Счётчик 24 часа','24 сағаттық есептегіш')} ${label?'· '+label:''}</h4>`;
+  if(cur){
+    const lv = cur.level==='pause'?T('ПАУЗА','ҮЗІЛІС'):cur.level==='soft'?T('ПРЕДУПРЕЖДЕНИЕ','ЕСКЕРТУ'):T('ПРОПУСТИТЬ','ӨТКІЗУ');
+    const c = cur.level==='pause'?'var(--red)':cur.level==='soft'?'var(--amber)':'var(--green)';
+    h += `<div class="score">${ring(cur.score,c)}<div><b style="color:${c}">${lv}</b><div class="note">${T('Индекс риска из 100 · получатель:','Тәуекел индексі (100-ден) · алушы:')} ${nm(cur.r)}</div></div></div>
+    ${meter(T('Переводы бабушки за 24 ч','Әженің 24 сағаттағы аударымдары'),cur.count,CNT_LIMIT,`${cur.count} / ${CNT_LIMIT}`)}
+    ${meter(T('Сумма за 24 ч','24 сағаттағы сома'),cur.sum,SUM_LIMIT,`${fmt(cur.sum)} · ${T('порог','шек')} ${fmt(SUM_LIMIT)}`)}
+    ${meter(T('Разные отправители получателю','Алушыға әртүрлі жіберушілер'),cur.r.senders,FAN_LIMIT,`${cur.r.senders} · ${T('порог','шек')} ${FAN_LIMIT}`)}
+    ${meter(T('Вывод полученных денег за 1 ч','Алынған ақшаны 1 сағатта шығару'),cur.r.out,OUT_LIMIT,`${cur.r.out}% · ${T('порог','шек')} ${OUT_LIMIT}%`)}`;
+  } else h += `<div class="empty">${T('Начните перевод в приложении бабушки. Здесь появится счётчик за сутки и индекс риска.','Әженің қосымшасында аударым бастаңыз. Мұнда тәуліктік есептегіш пен тәуекел индексі шығады.')}</div>`;
+  h += `</div>`;
+  h += `<div class="pn"><h4>${T('Сеть получателя','Алушы желісі')}</h4>`;
+  if(showG){
+    h += graph(cur);
+    const nets = cur.r.senders>=FAN_LIMIT;
+    h += `<div class="mini" style="margin-top:6px"><span class="chip on">${T('В зоне риска:','Тәуекел аймағында:')} ${fmt(cur.r.inflow)}</span><span class="chip">${nets?T('Типичная схема «веер → вывод»','Үлгілі схема: «желпуіш → шығару»'):T('Связей мало: наблюдаем','Байланыс аз: бақылаймыз')}</span></div>
+    <div style="margin-top:12px"><button class="btn sm" style="width:auto;padding:0 18px" data-act="doss">${T('Досье от ИИ','ЖИ анықтамасы')}</button></div>`;
+    if(S.dossier) h += `<div class="doss">${dossier(cur)}</div><div style="margin-top:8px"><button class="chip" data-act="copy">${T('Скопировать','Көшіру')}</button></div>`;
+  } else h += `<div class="empty">${T('Сеть раскрывается, когда перевод стоит на паузе или остановлен семьёй.','Желі аударым үзілісте тұрғанда немесе отбасы тоқтатқанда ашылады.')}</div>`;
+  h += `</div>`;
+  h += `<div class="pn"><h4>${T('События','Оқиғалар')}</h4><div class="feed">${S.alerts.length?S.alerts.map(e=>`<div class="ev ${e.cls}"><time>${e.t}</time><span>${P(e.txt)}</span></div>`).join(''):`<div class="empty">${T('Пока тихо.','Әзірге тыныш.')}</div>`}</div></div>`;
+  document.getElementById('bank').innerHTML = h;
+}
+function ring(v,c){const L=2*Math.PI*34;return `<svg width="84" height="84" viewBox="0 0 84 84" aria-label="${v}"><circle cx="42" cy="42" r="34" fill="none" style="stroke:#34383c" stroke-width="8"/><circle cx="42" cy="42" r="34" fill="none" style="stroke:${c};transition:stroke-dashoffset .6s" stroke-width="8" stroke-linecap="round" stroke-dasharray="${L}" stroke-dashoffset="${L*(1-v/100)}" transform="rotate(-90 42 42)"/><text x="42" y="50" text-anchor="middle" style="fill:${c}" font-size="24" font-weight="800">${v}</text></svg>`;}
+function pushNotify(){ S.push=true; setTimeout(()=>{const ph=document.querySelectorAll('.phone')[1]; if(ph){ph.classList.remove('shake');void ph.offsetWidth;ph.classList.add('shake');}},30); setTimeout(()=>{S.push=false;renderD();},4000); }
+let RUN=0; const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let DEMO=false, NEXT=null;
+function waitNext(){ return new Promise(r=>{ NEXT=r; }); }
+function goNext(){ if(NEXT){ const r=NEXT; NEXT=null; r(); } }
+document.addEventListener('keydown', e=>{ if(DEMO && (e.key==='Enter'||e.key===' '||e.key==='ArrowRight')){ e.preventDefault(); e.stopPropagation(); goNext(); } }, true);
+function cap(ru,kz,hint){const e=document.getElementById('cap'); if(!ru){e.className='cap';e.innerHTML='';return;} e.className='cap on'; e.innerHTML=`<span>${T(ru,kz)}</span>`+(hint?`<button class="nextb" data-act="next">${T('Далее','Келесі')} ⏎</button>`:'');}
+async function autoDemo(){
+  const id=++RUN; DEMO=true; if(document.activeElement) document.activeElement.blur(); clearInterval(tick); const l=S.lang; S=fresh(); S.lang=l; renderAll();
+  const step=async(ru,kz,ms,fn)=>{ if(id!==RUN) throw 0; cap(ru,kz,true); if(fn) fn(); await waitNext(); if(id!==RUN) throw 0; };
+  try{
+    await step('1 · Обычная жизнь: бабушка переводит внуку 10 000 ₸','1 · Қарапайым өмір: әже немересіне 10 000 ₸ аударады',2500,()=>scenario(1));
+    await step('Перевод проходит мгновенно. Мы не мешаем обычной жизни','Аударым бірден өтеді. Біз қарапайым өмірге кедергі жасамаймыз',3000,()=>submit());
+    await step('2 · Звонок «из службы безопасности банка»: «переводите частями по 90 000 ₸»','2 · «Банктің қауіпсіздік қызметінен» қоңырау: «90 000 ₸-ден бөліп аударыңыз»',3000,()=>scenario(2));
+    await step('Первый перевод: ИИ насторожился и мягко предупреждает','Бірінші аударым: ЖИ сақтанып, жұмсақ ескертеді',3000,()=>submit());
+    await step('Под давлением бабушка всё равно отправляет…','Қысыммен әже бәрібір жібереді…',2200,()=>{send(S.result.a);renderAll();});
+    await step('Второй перевод: Счётчик 24 часа красный, перевод на паузе, Айгерим получает уведомление','Екінші аударым: 24 сағаттық есептегіш қызыл, аударым үзілісте, Айгерімге хабарлама келді',4500,()=>{scenario(2);submit();});
+    await step('Айгерим видит объяснение от ИИ и звонит бабушке: «Әже, положи трубку!»','Айгерім ЖИ түсіндірмесін көріп, әжеге қоңырау шалады: «Әже, тұтқаны қойыңыз!»',4000,()=>decide('call'));
+    await step('Айгерим нажимает «Остановить»: деньги на месте, сеть дропов раскрыта','Айгерім «Тоқтату» басады: ақша орнында, дроп желісі ашылды',3500,()=>decide('stop'));
+    await step('Досье для полиции готово за секунды','Полицияға анықтама бірнеше секундта дайын',4500,()=>{S.dossier=true;renderBank();});
+    cap('«У каждой бабушки должен быть внук, который рядом. Даже когда его нет рядом.»','«Әр әженің қасында немересі болуы керек. Тіпті ол алыста болса да.»'); DEMO=false;
+  }catch(e){ DEMO=false; }
+}
+function renderPhones(){ renderG(); renderD(); }
+function applyStatic(){
+  document.documentElement.lang = kzOn()?'kk':'ru';
+  document.querySelectorAll('[data-ru]').forEach(e=>{ e.textContent = kzOn()?e.dataset.kz:e.dataset.ru; });
+  document.getElementById('tLang').textContent = kzOn() ? 'Тіл: ҚАЗ' : 'Язык: RU';
+  document.getElementById('tLang').classList.toggle('on', kzOn());
+  document.title = kzOn() ? 'BCC Аман: отбасылық қорғау прототипі' : 'BCC Аман: прототип семейной защиты переводов';
+}
+function renderAll(){ applyStatic(); renderPhones(); renderBank();
+  document.getElementById('tCall').classList.toggle('on',S.call);
+  document.getElementById('tHes').classList.toggle('on',S.hes); }
+
+/* ---------- События ---------- */
+function scenario(n){
+  if(S.pending) return;
+  if(n===1){ S.call=false; S.hes=false; S.phone='+7 701 111 11 11'; S.amount='10000'; }
+  if(n===2){ S.call=true; S.hes=true; S.phone='+7 777 222 22 22'; S.amount='90000'; }
+  if(n===3){ S.call=true; S.hes=true; S.phone='+7 705 555 01 42'; S.amount='450000'; }
+  S.screen='form'; renderAll();
+}
+document.addEventListener('click', e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return; const a=b.dataset.act;
+  if(a==='scn1') scenario(1); else if(a==='scn2') scenario(2); else if(a==='scn3') scenario(3);
+  else if(a==='tcall'){S.call=!S.call;renderAll();}
+  else if(a==='thes'){S.hes=!S.hes;renderAll();}
+  else if(a==='lang'){S.lang=kzOn()?'ru':'kz';renderAll();}
+  else if(a==='auto') autoDemo();
+  else if(a==='next') goNext();
+  else if(a==='speak'){try{const u=new SpeechSynthesisUtterance(T('Перевод ожидает подтверждения. Мы попросили Айгерим проверить его. Если кто-то по телефону торопит вас, положите трубку. Настоящий банк никогда не торопит.','Аударым растауды күтуде. Біз Айгерімнен тексеруді сұрадық. Егер біреу телефон арқылы асықтырса, тұтқаны қойыңыз. Нағыз банк ешқашан асықтырмайды.'));u.lang=kzOn()?'kk-KZ':'ru-RU';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(x){}}
+  else if(a==='reset'){RUN++;DEMO=false;NEXT=null;cap(null);clearInterval(tick);const l=S.lang;S=fresh();S.lang=l;renderAll();}
+  else if(a==='goform'){S.screen='form';renderAll();}
+  else if(a==='home'){S.screen='home';renderAll();}
+  else if(a==='settings'){S.screen='settings';renderAll();}
+  else if(a==='services'){S.screen='services';renderAll();}
+  else if(a==='paysvc'){const v=SVC[+b.dataset.i];const r={ru:v.ru,kz:v.kz,known:true,senders:0,inflow:0,out:0};const x=assess(r,v.amount);send(x);log('Оплата услуги: '+v.ru+' '+fmt(v.amount)+', риск '+x.score,'Қызмет төлемі: '+v.kz+' '+fmt(v.amount)+', тәуекел '+x.score);renderAll();}
+  else if(a==='pick'){S.phone='+7 '+b.dataset.p;renderAll();}
+  else if(a==='submit') submit();
+  else if(a==='force'){send(S.result.a);renderAll();}
+  else if(a==='chg'||a==='off'){
+    S.notes.push(a);
+    log(a==='off'?'Выключение режима запрошено: действует через 24 часа, доверенная уведомлена':'Смена доверенного запрошена: действует через 24 часа, доверенная уведомлена', a==='off'?'Режимді өшіру сұралды: 24 сағаттан кейін күшіне енеді, сенімді адам хабардар етілді':'Сенімді адамды ауыстыру сұралды: 24 сағаттан кейін күшіне енеді, сенімді адам хабардар етілді','w'); renderAll();
+  }
+  else if(a==='urgent'){log('Бабушка нажала «Срочно»: живой сотрудник BCC перезванивает','Әже «Шұғыл» түймесін басты: BCC-нің тірі маманы қоңырау шалады','w');renderBank();toast('Сотрудник BCC перезвонит вам в течение минуты.','BCC маманы бір минут ішінде сізге қоңырау шалады.','g');}
+  else if(a==='d-call') decide('call');
+  else if(a==='d-allow') decide('allow');
+  else if(a==='d-stop') decide('stop');
+  else if(a==='d-idle'){S.gscreen='idle';renderAll();}
+  else if(a==='doss'){S.dossier=!S.dossier;renderBank();}
+  else if(a==='copy'){ const c=S.pending||S.cases[S.cases.length-1]; try{navigator.clipboard.writeText(dossier(c));b.textContent=T('Скопировано','Көшірілді');}catch(x){b.textContent=T('Выделите текст вручную','Мәтінді қолмен таңдаңыз');} }
+});
+renderAll();
+</script>
+</body>
+</html>
